@@ -1,5 +1,4 @@
 import streamlit as st
-from pathlib import Path
 
 st.set_page_config(
     page_title="대한민국 여론분석기",
@@ -7,62 +6,75 @@ st.set_page_config(
     layout="wide"
 )
 
-# -------------------
+# -----------------------------
+# 이미지
+# -----------------------------
+
+CANDLE_IMAGE = "https://i.pinimg.com/736x/b9/52/2f/b9522f96d451eac189ad2a3d31510b13.jpg"
+
+FLAG_IMAGE = "https://img1.newsis.com/2025/02/22/NISI20250222_0001776155_web.jpg?rnd=20250222165036"
+
+# -----------------------------
 # CSS
-# -------------------
+# -----------------------------
 
 st.markdown("""
 <style>
 
-.main{
-    background-color:#111111;
+.main {
+    background-color:#0e1117;
 }
 
-.block-container{
-    padding-top:1rem;
-}
-
-.title{
+.title {
     text-align:center;
-    font-size:48px;
+    font-size:52px;
     font-weight:800;
     color:white;
 }
 
-.subtitle{
+.subtitle {
     text-align:center;
-    color:#cccccc;
+    color:#c0c0c0;
     margin-bottom:20px;
 }
 
-.keyword-btn button{
-    width:100%;
-}
-
-.result-box{
+.result-box {
     padding:20px;
     border-radius:15px;
-    background:#1e1e1e;
     border:1px solid #444;
+    background:#1a1a1a;
+}
+
+.keyword-title {
+    text-align:center;
+    font-size:24px;
+    font-weight:700;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------
+# -----------------------------
+# session state
+# -----------------------------
+
+if "keyword" not in st.session_state:
+    st.session_state.keyword = ""
+
+# -----------------------------
 # 상단 배너
-# -------------------
+# -----------------------------
 
 left, center, right = st.columns([2,4,2])
 
 with left:
-    st.image("assets/candle.jpg", use_container_width=True)
+    st.image(CANDLE_IMAGE, use_container_width=True)
 
 with center:
 
     st.markdown(
         """
-        <div class="title">
+        <div class='title'>
         대한민국 여론분석기
         </div>
         """,
@@ -71,23 +83,28 @@ with center:
 
     st.markdown(
         """
-        <div class="subtitle">
-        대한민국 주요 이슈와 여론조사 현황
+        <div class='subtitle'>
+        대한민국 주요 이슈 및 여론조사 분석 플랫폼
         </div>
         """,
         unsafe_allow_html=True
     )
 
 with right:
-    st.image("assets/flag.jpg", use_container_width=True)
+    st.image(FLAG_IMAGE, use_container_width=True)
 
 st.divider()
 
-# -------------------
+# -----------------------------
 # 실시간 키워드
-# -------------------
+# -----------------------------
 
-trending = [
+st.markdown(
+    "<div class='keyword-title'>🔥 실시간 관심 키워드</div>",
+    unsafe_allow_html=True
+)
+
+keywords = [
     "대통령",
     "국민의힘",
     "더불어민주당",
@@ -95,44 +112,51 @@ trending = [
     "부동산"
 ]
 
-st.subheader("🔥 실시간 관심 키워드")
+cols = st.columns(5)
 
-cols = st.columns(len(trending))
+for i, kw in enumerate(keywords):
 
-selected_keyword = None
+    if cols[i].button(
+        kw,
+        use_container_width=True
+    ):
+        st.session_state.keyword = kw
+        st.rerun()
 
-for i, keyword in enumerate(trending):
+st.write("")
 
-    if cols[i].button(keyword):
-        selected_keyword = keyword
-
-# -------------------
+# -----------------------------
 # 검색창
-# -------------------
+# -----------------------------
 
-search_input = st.text_input(
-    "키워드 입력",
+search = st.text_input(
+    "키워드를 입력하세요",
+    value=st.session_state.keyword,
     placeholder="예: 대통령"
 )
 
-keyword = selected_keyword if selected_keyword else search_input
+if search != st.session_state.keyword:
+    st.session_state.keyword = search
 
 st.divider()
 
-# -------------------
-# 중앙선관위 버튼
-# -------------------
+# -----------------------------
+# 중앙선관위
+# -----------------------------
 
 st.link_button(
-    "중앙선거여론조사심의위원회 바로가기",
-    "https://www.nesdc.go.kr"
+    "📋 중앙선거여론조사심의위원회 바로가기",
+    "https://www.nesdc.go.kr",
+    use_container_width=True
 )
 
 st.divider()
 
-# -------------------
+# -----------------------------
 # 결과
-# -------------------
+# -----------------------------
+
+keyword = st.session_state.keyword.strip()
 
 if keyword:
 
@@ -141,36 +165,49 @@ if keyword:
     st.markdown(
         f"""
         <div class='result-box'>
-        <h3>{keyword} 분석 결과</h3>
 
-        현재 버전은 디자인 시연용 버전입니다.
+        <h3>{keyword}</h3>
 
-        추후 기능:
+        현재 버전은 UI 및 검색 테스트 버전입니다.
+
+        <br>
+
+        향후 추가 예정 기능
+
         <ul>
-            <li>중앙선관위 여론조사 자동 검색</li>
+            <li>중앙선관위 자동 검색</li>
+            <li>여론조사 데이터 자동 수집</li>
             <li>최근 1개월 추세 분석</li>
             <li>조사기관별 비교</li>
-            <li>꺾은선 그래프</li>
+            <li>지지율 꺾은선 그래프</li>
             <li>조사 원문 링크 제공</li>
         </ul>
+
         </div>
         """,
         unsafe_allow_html=True
     )
 
     st.info(
-        f"'{keyword}' 관련 여론조사가 검색되면 "
-        "이 위치에 그래프가 표시됩니다."
+        f"'{keyword}' 관련 여론조사가 검색되면 이 영역에 그래프와 분석 결과가 표시됩니다."
     )
 
 else:
 
-    st.markdown(
-        """
-        ### 👋 사용 방법
+    st.markdown("""
+    ## 👋 사용 방법
 
-        1. 키워드를 입력하세요.
-        2. 또는 실시간 관심 키워드를 클릭하세요.
-        3. 향후 버전에서는 중앙선관위 여론조사를 자동 분석합니다.
-        """
-    )
+    1. 관심 있는 키워드를 입력하세요.
+    2. 또는 실시간 관심 키워드를 클릭하세요.
+    3. 검색 결과가 이곳에 표시됩니다.
+    """)
+
+# -----------------------------
+# 하단
+# -----------------------------
+
+st.divider()
+
+st.caption(
+    "대한민국 여론분석기 Beta v0.1"
+)
